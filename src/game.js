@@ -4,7 +4,7 @@ var BreakOut = (function() {
     const refreshRateInMilliseconds = 5;
     const canvasWidth = 400;
     const canvasHeight = 300;
-    
+
     //  For the player
     const defaultPaddleWidth = 100;
     const defaultPaddleHeight = 5;
@@ -19,15 +19,8 @@ var BreakOut = (function() {
     var canvas;
     var ctx;    
     var ball;           //  Current ball object state
-
-    var player = {      //  Current player/paddle information   
-        score : 0,
-        lives : defaultLives,
-        paddleHeight : defaultPaddleHeight,
-        paddleWidth : defaultPaddleWidth,
-        paddleLeft : (canvasWidth/2)-(defaultPaddleWidth/2)
-    }
-    
+    var player;         //  Current player/paddle information   
+         
     //  Function to call that sets up the game canvas, sets up the canvas,
     //  the event listener and then starts the ball and the game
     function Setup () {
@@ -35,6 +28,8 @@ var BreakOut = (function() {
         ctx = canvas.getContext("2d");
         canvas.width  = canvasWidth;    
         canvas.height = canvasHeight;
+
+        //clearTimeout(gameLoop);
 
         document.addEventListener('keypress', function (e) {
             var key = e.which || e.keyCode;
@@ -47,8 +42,19 @@ var BreakOut = (function() {
         });
         
         //  Create the ball and start the game loop
+        ResetPlayer();
         ResetBall();
-        setTimeout(RefreshFrame, refreshRateInMilliseconds);
+        RefreshFrame();
+    }
+
+    function ResetPlayer () {
+        player = {      //  Current player/paddle information   
+            score : 0,
+            lives : defaultLives,
+            paddleHeight : defaultPaddleHeight,
+            paddleWidth : defaultPaddleWidth,
+            paddleLeft : (canvasWidth/2)-(defaultPaddleWidth/2)
+        };
     }
 
     function ResetBall () {
@@ -129,6 +135,7 @@ var BreakOut = (function() {
         ctx.stroke();
     }
 
+    //  Shortcut to clear the canvas
     function ClearCanvas () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     } 
