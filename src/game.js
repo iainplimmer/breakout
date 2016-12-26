@@ -4,17 +4,23 @@ var BreakOut = (function() {
     const refreshRateInMilliseconds = 1;
     const canvasWidth = 400;
     const canvasHeight = 300;
-    const increment = 1;
+    const defaultPaddleWidth = 50;
+    const defaultPaddleHeight = 5;
+    const defaultBallRadius = 5;
+    const defaultLives = 3;
 
-    //  Create any common variables that are needed here
+    //  Create any common variables that are needed here that are shared thoughout the game
     var canvas;
     var ctx;    
-    var ball;                    //  Current ball object state
-    var x_increment = increment; //  Current ball X position
-    var y_increment = increment; //  Current ball Y position
-    var player = {               //  Current player information   
+    var ball;           //  Current ball object state
+
+    var player = {      //  Current player/paddle information   
         score : 0,
-        lives : 3
+        lives : defaultLives,
+        paddleHeight : defaultPaddleHeight,
+        paddleWidth : defaultPaddleWidth,
+        paddleLeft : canvasWidth/2,
+        paddleRight: canvasWidth/2 + defaultPaddleWidth 
     }
     
     //  Function to call that sets up the game canvas
@@ -31,26 +37,27 @@ var BreakOut = (function() {
 
     function ResetBall () {
         ball = {
-            x : canvasWidth / 2,
+            x : canvasWidth / 2,    
             y : canvasHeight / 2,
-            radius : 10
+            radius : defaultBallRadius,
+            x_increment : 1,    
+            y_increment : 1     //  Current ball X/Y movement increments
         }
-        x_increment = increment;
-        y_increment = increment;
+
     }
 
     //  The main loop that the game will run on is here, we clear the canvas, 
     //  draw the ball, check for collisions, game over and then call it all again.
     function RefreshFrame () {
 
-        //  Hits any wall
+        //  Hits any side wall
         if (ball.x == (canvasWidth - ball.radius) || ball.x == ball.radius) {
-            x_increment = -x_increment;
+            ball.x_increment = -ball.x_increment;
         }
         
         //  Hits the top
         if (ball.y == ball.radius) {
-            y_increment = -y_increment;
+            ball.y_increment = -ball.y_increment;
         }
 
         //  Goes off the bottom of the screen completely
@@ -59,20 +66,36 @@ var BreakOut = (function() {
             player.lives--;
         }
 
+        //  Hits the paddle
+        if (ball.y == canvasHeight - player.paddleHeight
+            && ball.x >= player.paddleLeft
+            && ball.x <= player.paddleRight
+            ) {
+            ball.y_increment = -ball.y_increment;
+        }
+
         ClearCanvas (); 
+        DrawPlayer ();
         DrawBall(ball.x, ball.y, ball.radius);
 
-        ball.x = ball.x - x_increment;
-        ball.y = ball.y - y_increment;
-
-        player.score++
+        ball.x = ball.x - ball.x_increment;
+        ball.y = ball.y - ball.y_increment;
+        
         document.getElementById('Score').innerText = player.score;
         document.getElementById('Lives').innerText = player.lives;
+
+        player.score++;
 
         //  Check if the player has any lives left
         if (player.lives > 0) {
             setTimeout(RefreshFrame, refreshRateInMilliseconds);
         }
+    }
+
+    //  Draws the current player position on the screen
+    function DrawPlayer() {
+        ctx.rect(player.paddleLeft, canvasHeight-player.paddleHeight, player.paddleWidth, player.paddleHeight);
+        ctx.stroke();
     }
 
     //  Draws a crude ball on the canvas
