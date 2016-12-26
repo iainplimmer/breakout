@@ -11,6 +11,11 @@ var BreakOut = (function() {
     const defaultBallRadius = 5;
     const defaultLives = 3;
 
+    //  For the wall
+    const defaultBricksPerRow = 6;
+    const defaultBrickRows = 3;
+    const defaultBrickHeight = 20;
+
     //  For control keys
     const leftKey = 122;    // Z
     const righttKey = 109;  // M
@@ -19,7 +24,8 @@ var BreakOut = (function() {
     var canvas;
     var ctx;    
     var ball;           //  Current ball object state
-    var player;         //  Current player/paddle information   
+    var player;         //  Current player/paddle information  
+    var wall;           //  Stores the information about the wall 
          
     //  Function to call that sets up the game canvas, sets up the canvas,
     //  the event listener and then starts the ball and the game
@@ -28,8 +34,6 @@ var BreakOut = (function() {
         ctx = canvas.getContext("2d");
         canvas.width  = canvasWidth;    
         canvas.height = canvasHeight;
-
-        //clearTimeout(gameLoop);
 
         document.addEventListener('keypress', function (e) {
             var key = e.which || e.keyCode;
@@ -42,9 +46,27 @@ var BreakOut = (function() {
         });
         
         //  Create the ball and start the game loop
+        ResetWall();
         ResetPlayer();
         ResetBall();
         RefreshFrame();
+    }
+
+    function ResetWall () {
+        /*var brick = {
+            width: canvasWidth/defaultBricksPerRow,
+            height : 30
+        }
+        var brickWidth = canvasWidth/defaultBricksPerRow;*/
+        //  TO DO NEXT TIME
+        //console.log(brickWidth);
+        //for(var i=0; i < canvasWidth; i+brickWidth) {
+            /*ctx.rect(i, 0, brickWidth, defaultBrickHeight);
+            ctx.strokeStyle = '#FF0000';
+            ctx.fillStyle = '#FF0000';
+            ctx.fill();        
+            ctx.stroke();*/
+        //}
     }
 
     function ResetPlayer () {
@@ -98,6 +120,7 @@ var BreakOut = (function() {
 
         //  Wipe the canvas, and reload the player and ball
         ClearCanvas (); 
+        ResetWall();
         DrawPlayer ();
         DrawBall(ball.x, ball.y, ball.radius);
 
