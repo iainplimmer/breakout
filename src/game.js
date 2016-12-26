@@ -27,7 +27,7 @@ var BreakOut = (function() {
         canvas.height = canvasHeight;
         
         //  Draw the game
-        RefreshFrame();
+        setInterval(RefreshFrame, refreshRateInMilliseconds);
     }
 
     //  The main loop that the game will run on is here, we clear the canvas, 
@@ -42,13 +42,11 @@ var BreakOut = (function() {
             y_increment = -y_increment;
         }
 
-        ball.x = ball.x + x_increment;
-        ball.y = ball.y + y_increment;
-
         ClearCanvas (); 
         DrawBall(ball.x, ball.y, ball.radius);
-        
-        setTimeout(RefreshFrame, refreshRateInMilliseconds);
+
+        ball.x = ball.x + x_increment;
+        ball.y = ball.y + y_increment;
     }
 
     //  Draws a crude ball on the canvas
