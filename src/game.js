@@ -4,7 +4,6 @@ var BreakOut = (function() {
     const refreshRateInMilliseconds = 5;
     const canvasWidth = 500;
     const canvasHeight = 300;
-    const defaultPaddleWidth = 100;
     const defaultBrickHeight = 20;
     const leftKey = 122;    // Z
     const righttKey = 109;  // M
@@ -44,45 +43,6 @@ var BreakOut = (function() {
         RefreshFrame();
     }
 
-    //  Creates the array of objects that form the wall
-    function ResetWall () {    
-        const defaultBricksPerRow = 5;
-        const defaultBrickRows = 3;          
-        var brickWidth = canvasWidth/defaultBricksPerRow;
-        for(var row=0; row < 3; row++) {
-            for(var col=0; col < canvasWidth; col+=brickWidth) {
-                var brick = {
-                    width: canvasWidth/defaultBricksPerRow,
-                    height : defaultBrickHeight,
-                    x : col,
-                    y : row * defaultBrickHeight,
-                    draw : true
-                }
-                WALL.push(brick);
-            }
-        }
-    }
-
-    function ResetPlayer () {
-        PLAYER = {      //  Current player/paddle information   
-            score : 0,
-            lives : 3,
-            paddleHeight : 5,
-            paddleWidth : defaultPaddleWidth,
-            paddleLeft : (canvasWidth/2)-(defaultPaddleWidth/2)
-        };
-    }
-
-    function ResetBall () {
-        BALL = {
-            x : canvasWidth / 2,    
-            y : canvasHeight / 2,
-            radius : 5,
-            x_increment : 1,    
-            y_increment : 1     //  Current ball X/Y movement increments
-        }
-    }
-
     //  The main loop that the game will run on is here, we clear the canvas, 
     //  draw the ball, check for collisions, game over and then call it all again.
     function RefreshFrame () {
@@ -98,28 +58,27 @@ var BreakOut = (function() {
         }
 
         //  Collides with any of the blocks on the screen
-        WALL.map(function(br){
+        WALL.forEach(function(br, ind){
             
-            var leftX = br.width + br.x;
-            var rightX = br.width + br.x + br.width;
+            //  What's the balls current Y in relation to the brick and radius?
             var brickY = br.y + br.height + BALL.radius;
 
+            //  Has the ball hit the bottom?
             if (br.draw && 
-                BALL.y === brickY 
-                && BALL.x < rightX
-                && BALL.x > leftX ) {                
-
-                console.log( 'ballx', BALL.x); 
-                console.log( 'leftx', leftX); 
-                console.log( 'rightx', rightX); 
-                console.log( 'brick', br);                               
+                BALL.y == brickY 
+                && BALL.x < br.rightx
+                && BALL.x > br.leftx               
+            ) { 
+                console.log('ballx', BALL.x); 
+                console.log('brick', br);      
+                console.log('ind', ind);                               
             
                 BALL.y_increment = -BALL.y_increment;
                 br.draw = false;
 
                 CTX.strokeStyle  = '#FF0000';        
                 CTX.strokeRect(br.x, br.y, br.width, br.height);     
-                throw new Error('Collision detection!');    
+                //zzthrow new Error('Collision detection!');    
             } 
         });
 
@@ -192,6 +151,47 @@ var BreakOut = (function() {
     function ClearCanvas () {
         CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
     } 
+
+    //  Creates the array of objects that form the wall
+    function ResetWall () {    
+        const defaultBricksPerRow = 5;
+        const defaultBrickRows = 3;          
+        var brickWidth = canvasWidth/defaultBricksPerRow;
+        for(var row=0; row < 3; row++) {
+            for(var col=0; col < canvasWidth; col+=brickWidth) {
+                var brick = {
+                    width: canvasWidth/defaultBricksPerRow,
+                    height : defaultBrickHeight,
+                    x : col,
+                    y : row * defaultBrickHeight,
+                    leftx : col,
+                    rightx : (col)+brickWidth,
+                    draw : true
+                }
+                WALL.push(brick);
+            }
+        }
+    }
+
+    function ResetPlayer () {
+        PLAYER = {      //  Current player/paddle information   
+            score : 0,
+            lives : 3,
+            paddleHeight : 5,
+            paddleWidth : 100,
+            paddleLeft : (canvasWidth/2)-(100/2)
+        };
+    }
+
+    function ResetBall () {
+        BALL = {
+            x : canvasWidth / 2,    
+            y : canvasHeight / 2,
+            radius : 5,
+            x_increment : 1,    
+            y_increment : 1     //  Current ball X/Y movement increments
+        }
+    }
 
     return {
         Setup : Setup
