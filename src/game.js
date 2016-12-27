@@ -2,8 +2,8 @@ var BreakOut = (function() {
 
     //  Set our constants first for the game rate and window size......
     const refreshRateInMilliseconds = 5;
-    const canvasWidth = 400;
-    const canvasHeight = 200;
+    const canvasWidth = 700;
+    const canvasHeight = 250;
     const defaultBrickHeight = 20;
     const leftKey = 122;    // Z
     const righttKey = 109;  // M
@@ -14,7 +14,8 @@ var BreakOut = (function() {
     var CTX;    
     var BALL;           //  Current ball object state
     var PLAYER;         //  Current player/paddle information  
-    var WALL ;           //  Stores the information about the wall 
+    var WALL;           //  Stores the information about the wall 
+    var WALLSTANDING = false;
          
     //  Function to call that sets up the game canvas, sets up the canvas,
     //  the event listener and then starts the ball and the game
@@ -26,6 +27,49 @@ var BreakOut = (function() {
         
         //Start the game loop
         Play();
+    }
+
+    //  Helper method used to check if the ball has hit a brick, ***less performant*** than in the game loop but nicely seperated
+    function DetectBrickCollision () {
+        
+        var brickbottomY = this.y + this.height + BALL.radius;
+        
+        //  Has the ball hit the bottom or top of the brick?
+        if (this.draw 
+            && ((BALL.y == brickbottomY) || (BALL.y == this.y))
+            && BALL.x < this.rightx
+            && BALL.x > this.leftx               
+        ) { 
+            BALL.y_increment = -BALL.y_increment;
+            this.draw = false;  
+            return true;            
+        } 
+
+        //  Hit left side of brick
+        if (this.draw
+            && BALL.x == this.leftx
+            && BALL.y > this.y 
+            && BALL.y < this.y+defaultBrickHeight
+        ){
+            BALL.y_increment = -BALL.y_increment;
+            BALL.x_increment = -BALL.x_increment;
+            this.draw = false; 
+            return true;
+        }
+
+        //  Hit right side of brick
+        if (this.draw
+            && BALL.x == this.rightx
+            && BALL.y > this.y
+            && BALL.y < this.y+defaultBrickHeight
+        ){
+            BALL.y_increment = -BALL.y_increment;
+            BALL.x_increment = -BALL.x_increment;
+            this.draw = false;
+            return true;
+        }        
+        
+        return false;
     }
 
     //  The main loop that the game will run on is here, we clear the canvas, 
@@ -45,32 +89,19 @@ var BreakOut = (function() {
         }
         
         //  Hits the top
-        if (BALL.y == BALL.radius) {
+        if (BALL.y <= BALL.radius) {
             BALL.y_increment = -BALL.y_increment;
         }
 
         //  Collides with any of the blocks on the screen
-        var wallStanding = false;
-        WALL.forEach(function(br, ind){
-            
-            //  What's the balls current Y in relation to the brick and radius?
-            var brickbottomY = br.y + br.height + BALL.radius;
-            var bricktopY = br.y + BALL.radius;
-
-            //  Has the ball hit the bottom?
-            if (br.draw 
-                && (BALL.y == brickbottomY)
-                && BALL.x < br.rightx
-                && BALL.x > br.leftx               
-            ) { 
-                BALL.y_increment = -BALL.y_increment;
-                br.draw = false;
-                //throw new Error('Collision detection!');    
-            } 
+        WALL.map(function(br){            
+            if (br.DetectBrickCollision()) {
+                PLAYER.score++;
+            }
 
             //  Set to true if even on brick is standing
             if (br.draw) {
-                wallStanding = true;
+                WALLSTANDING = true;
             }
         });
 
@@ -100,12 +131,11 @@ var BreakOut = (function() {
         BALL.y = BALL.y - BALL.y_increment;
         
         //   Feedback the score to the player
-        PLAYER.score++;
         document.getElementById('Score').innerText = PLAYER.score;
         document.getElementById('Lives').innerText = PLAYER.lives;      
 
         //  Check if the player has any lives left and that the wall is still standing
-        if (PLAYER.lives > 0 && wallStanding) {
+        if (PLAYER.lives > 0 && WALLSTANDING) {
             setTimeout(Play, refreshRateInMilliseconds);
         }
     }
@@ -146,11 +176,11 @@ var BreakOut = (function() {
 
     //  Creates the array of objects that form the wall
     function ResetWall () {    
-        const defaultBricksPerRow = 5;
-        const defaultBrickRows = 3;       
+        const defaultBricksPerRow = 10;
+        const defaultBrickRows = 5;       
         var wall = [];   
         var brickWidth = canvasWidth/defaultBricksPerRow;
-        for(var row=0; row < 3; row++) {
+        for(var row=0; row < defaultBrickRows; row++) {
             for(var col=0; col < canvasWidth; col+=brickWidth) {
                 var brick = {
                     width: canvasWidth/defaultBricksPerRow,
@@ -160,7 +190,8 @@ var BreakOut = (function() {
                     leftx : col,
                     rightx : (col)+brickWidth,
                     draw : true
-                }
+                };
+                brick.DetectBrickCollision = DetectBrickCollision.bind(brick);
                 wall.push(brick);
             }
         }
@@ -186,8 +217,8 @@ var BreakOut = (function() {
             score : 0,
             lives : 3,
             paddleHeight : 5,
-            paddleWidth : 100,
-            paddleLeft : (canvasWidth/2)-(100/2)
+            paddleWidth : 1000,
+            paddleLeft : (canvasWidth/2)-(1000/2)
         };
     }
 
