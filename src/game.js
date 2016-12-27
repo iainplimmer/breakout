@@ -2,21 +2,10 @@ var BreakOut = (function() {
 
     //  Set our constants first for the game rate and window size......
     const refreshRateInMilliseconds = 5;
-    const canvasWidth = 600;
+    const canvasWidth = 500;
     const canvasHeight = 300;
-
-    //  For the player and paddle
     const defaultPaddleWidth = 100;
-    const defaultPaddleHeight = 5;
-    const defaultBallRadius = 5;
-    const defaultLives = 3;
-
-    //  For the wall
-    const defaultBricksPerRow = 6;
-    const defaultBrickRows = 3;
     const defaultBrickHeight = 20;
-
-    //  For control keys
     const leftKey = 122;    // Z
     const righttKey = 109;  // M
 
@@ -56,7 +45,9 @@ var BreakOut = (function() {
     }
 
     //  Creates the array of objects that form the wall
-    function ResetWall () {              
+    function ResetWall () {    
+        const defaultBricksPerRow = 5;
+        const defaultBrickRows = 3;          
         var brickWidth = canvasWidth/defaultBricksPerRow;
         for(var row=0; row < 3; row++) {
             for(var col=0; col < canvasWidth; col+=brickWidth) {
@@ -75,8 +66,8 @@ var BreakOut = (function() {
     function ResetPlayer () {
         PLAYER = {      //  Current player/paddle information   
             score : 0,
-            lives : defaultLives,
-            paddleHeight : defaultPaddleHeight,
+            lives : 3,
+            paddleHeight : 5,
             paddleWidth : defaultPaddleWidth,
             paddleLeft : (canvasWidth/2)-(defaultPaddleWidth/2)
         };
@@ -86,7 +77,7 @@ var BreakOut = (function() {
         BALL = {
             x : canvasWidth / 2,    
             y : canvasHeight / 2,
-            radius : defaultBallRadius,
+            radius : 5,
             x_increment : 1,    
             y_increment : 1     //  Current ball X/Y movement increments
         }
@@ -107,21 +98,28 @@ var BreakOut = (function() {
         }
 
         //  Collides with any of the blocks on the screen
-        var itemsToRemove = [];
-        WALL.forEach(function(brick){
+        WALL.map(function(br){
             
-            if (brick.draw
-                && BALL.y == (brick.y+brick.height) 
-                && BALL.x >= brick.width + brick.x) {                
+            var leftX = br.width + br.x;
+            var rightX = br.width + br.x + br.width;
+            var brickY = br.y + br.height + BALL.radius;
 
-                    
-                    brick.draw = false;
-                    console.log('ball', BALL);
-                    console.log('brick', brick);
-                    throw new Error('Collision detection!');
+            if (br.draw && 
+                BALL.y === brickY 
+                && BALL.x < rightX
+                && BALL.x > leftX ) {                
 
-                    BALL.y_increment = -BALL.y_increment;
-                    
+                console.log( 'ballx', BALL.x); 
+                console.log( 'leftx', leftX); 
+                console.log( 'rightx', rightX); 
+                console.log( 'brick', br);                               
+            
+                BALL.y_increment = -BALL.y_increment;
+                br.draw = false;
+
+                CTX.strokeStyle  = '#FF0000';        
+                CTX.strokeRect(br.x, br.y, br.width, br.height);     
+                throw new Error('Collision detection!');    
             } 
         });
 
