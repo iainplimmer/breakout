@@ -61,24 +61,18 @@ var BreakOut = (function() {
         WALL.forEach(function(br, ind){
             
             //  What's the balls current Y in relation to the brick and radius?
-            var brickY = br.y + br.height + BALL.radius;
+            var brickbottomY = br.y + br.height + BALL.radius;
+            var bricktopY = br.y + BALL.radius;
 
-            //  Has the ball hit the bottom?
-            if (br.draw && 
-                BALL.y == brickY 
+            //  Has the ball hit the bottom of the brick?
+            if (br.draw 
+                && (BALL.y == brickbottomY)
                 && BALL.x < br.rightx
                 && BALL.x > br.leftx               
             ) { 
-                console.log('ballx', BALL.x); 
-                console.log('brick', br);      
-                console.log('ind', ind);                               
-            
                 BALL.y_increment = -BALL.y_increment;
                 br.draw = false;
-
-                CTX.strokeStyle  = '#FF0000';        
-                CTX.strokeRect(br.x, br.y, br.width, br.height);     
-                //zzthrow new Error('Collision detection!');    
+                //throw new Error('Collision detection!');    
             } 
         });
 
