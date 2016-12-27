@@ -2,9 +2,9 @@ var BreakOut = (function() {
 
     //  Set our constants first for the game rate and window size......
     const refreshRateInMilliseconds = 5;
-    const canvasWidth = 700;
-    const canvasHeight = 250;
-    const defaultBrickHeight = 20;
+    const canvasWidth = 500;
+    const canvasHeight = 400;
+    const defaultBrickHeight = 30;
     const leftKey = 122;    // Z
     const righttKey = 109;  // M
 
@@ -98,11 +98,6 @@ var BreakOut = (function() {
             if (br.DetectBrickCollision()) {
                 PLAYER.score++;
             }
-
-            //  Set to true if even on brick is standing
-            if (br.draw) {
-                WALLSTANDING = true;
-            }
         });
 
         //  Goes off the bottom of the screen completely. Decrement the number of lives
@@ -135,7 +130,7 @@ var BreakOut = (function() {
         document.getElementById('Lives').innerText = PLAYER.lives;      
 
         //  Check if the player has any lives left and that the wall is still standing
-        if (PLAYER.lives > 0 && WALLSTANDING) {
+        if (PLAYER.lives > 0) {
             setTimeout(Play, refreshRateInMilliseconds);
         }
     }
@@ -176,8 +171,8 @@ var BreakOut = (function() {
 
     //  Creates the array of objects that form the wall
     function ResetWall () {    
-        const defaultBricksPerRow = 10;
-        const defaultBrickRows = 5;       
+        const defaultBricksPerRow = 5;
+        const defaultBrickRows = 6;       
         var wall = [];   
         var brickWidth = canvasWidth/defaultBricksPerRow;
         for(var row=0; row < defaultBrickRows; row++) {
@@ -217,8 +212,8 @@ var BreakOut = (function() {
             score : 0,
             lives : 3,
             paddleHeight : 5,
-            paddleWidth : 1000,
-            paddleLeft : (canvasWidth/2)-(1000/2)
+            paddleWidth : 150,
+            paddleLeft : (canvasWidth/2)-(150/2)
         };
     }
 
