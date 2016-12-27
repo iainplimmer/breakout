@@ -3,7 +3,7 @@ var BreakOut = (function() {
     //  Set our constants first for the game rate and window size......
     const refreshRateInMilliseconds = 5;
     const canvasWidth = 600;
-    const canvasHeight = 400;
+    const canvasHeight = 300;
 
     //  For the player and paddle
     const defaultPaddleWidth = 100;
@@ -64,7 +64,8 @@ var BreakOut = (function() {
                     width: canvasWidth/defaultBricksPerRow,
                     height : defaultBrickHeight,
                     x : col,
-                    y : row * defaultBrickHeight
+                    y : row * defaultBrickHeight,
+                    draw : true
                 }
                 WALL.push(brick);
             }
@@ -105,8 +106,24 @@ var BreakOut = (function() {
             BALL.y_increment = -BALL.y_increment;
         }
 
-        //  Hits any of the blocks
+        //  Collides with any of the blocks on the screen
+        var itemsToRemove = [];
+        WALL.forEach(function(brick){
+            
+            if (brick.draw
+                && BALL.y == (brick.y+brick.height) 
+                && BALL.x >= brick.width + brick.x) {                
 
+                    
+                    brick.draw = false;
+                    console.log('ball', BALL);
+                    console.log('brick', brick);
+                    throw new Error('Collision detection!');
+
+                    BALL.y_increment = -BALL.y_increment;
+                    
+            } 
+        });
 
         //  Goes off the bottom of the screen completely. Decrement the number of lives
         //  and reset the ball to start the player again
@@ -115,7 +132,7 @@ var BreakOut = (function() {
             ResetBall();
         }
 
-        //  Hits the paddle
+        //  Hits the paddle (want to add a hit left, right and middle modifier here)
         if (BALL.y == canvasHeight - PLAYER.paddleHeight
             && BALL.x >= PLAYER.paddleLeft
             && BALL.x <= (PLAYER.paddleLeft + PLAYER.paddleWidth)
@@ -164,10 +181,12 @@ var BreakOut = (function() {
     }
 
     //  Draws the wall from the WALL array, will then only draw bricks still in play
-    function DrawWall (DrawWall) {
-        WALL.map(function (brick) {            
-            CTX.strokeStyle = '#000000';        
-            CTX.strokeRect(brick.x, brick.y, brick.width, brick.height);            
+    function DrawWall () {
+        WALL.map(function (brick) {    
+            if (brick.draw) {       
+                CTX.strokeStyle = '#000000';        
+                CTX.strokeRect(brick.x, brick.y, brick.width, brick.height);            
+            }
         });
     }
 
