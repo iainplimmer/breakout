@@ -1,11 +1,11 @@
 var BreakOut = (function() {
 
-    //  Set our constants first for the game......
+    //  Set our constants first for the game rate and window size......
     const refreshRateInMilliseconds = 5;
-    const canvasWidth = 400;
-    const canvasHeight = 300;
+    const canvasWidth = 600;
+    const canvasHeight = 400;
 
-    //  For the player
+    //  For the player and paddle
     const defaultPaddleWidth = 100;
     const defaultPaddleHeight = 5;
     const defaultBallRadius = 5;
@@ -20,57 +20,59 @@ var BreakOut = (function() {
     const leftKey = 122;    // Z
     const righttKey = 109;  // M
 
-    //  Create any common variables that are needed here that are shared thoughout the game
-    var canvas;
-    var ctx;    
-    var ball;           //  Current ball object state
-    var player;         //  Current player/paddle information  
-    var wall;           //  Stores the information about the wall 
+    //  Finally, create any common variables that are needed here that are shared thoughout the game, these are 
+    //  named in uppercase so that they are more visible, i'm not just passing around functions at the moment
+    var CANVAS;
+    var CTX;    
+    var BALL = {};           //  Current ball object state
+    var PLAYER = {};         //  Current player/paddle information  
+    var WALL = [];           //  Stores the information about the wall 
          
     //  Function to call that sets up the game canvas, sets up the canvas,
     //  the event listener and then starts the ball and the game
     function Setup () {
-        canvas = document.getElementById('GameCanvas');
-        ctx = canvas.getContext("2d");
-        canvas.width  = canvasWidth;    
-        canvas.height = canvasHeight;
+        CANVAS = document.getElementById('GameCanvas');
+        CTX = CANVAS.getContext("2d");
+        CANVAS.width  = canvasWidth;    
+        CANVAS.height = canvasHeight;
 
+        //  Let's listen for when the player presses keys
         document.addEventListener('keypress', function (e) {
             var key = e.which || e.keyCode;
-            if (key === leftKey && player.paddleLeft > 0) { 
-                player.paddleLeft = player.paddleLeft-20; 
+            if (key === leftKey && PLAYER.paddleLeft > 0) { 
+                PLAYER.paddleLeft = PLAYER.paddleLeft-20; 
             }
-            else if (key === righttKey && (player.paddleLeft+player.paddleWidth) < canvasWidth) { 
-                player.paddleLeft = player.paddleLeft+20; 
+            else if (key === righttKey && (PLAYER.paddleLeft+PLAYER.paddleWidth) < canvasWidth) { 
+                PLAYER.paddleLeft = PLAYER.paddleLeft+20; 
             }
         });
         
         //  Create the ball and start the game loop
         ResetWall();
+        DrawWall();
         ResetPlayer();
         ResetBall();
         RefreshFrame();
     }
 
-    function ResetWall () {
-        /*var brick = {
-            width: canvasWidth/defaultBricksPerRow,
-            height : 30
+    //  Creates the array of objects that form the wall
+    function ResetWall () {              
+        var brickWidth = canvasWidth/defaultBricksPerRow;
+        for(var row=0; row < 3; row++) {
+            for(var col=0; col < canvasWidth; col+=brickWidth) {
+                var brick = {
+                    width: canvasWidth/defaultBricksPerRow,
+                    height : defaultBrickHeight,
+                    x : col,
+                    y : row * defaultBrickHeight
+                }
+                WALL.push(brick);
+            }
         }
-        var brickWidth = canvasWidth/defaultBricksPerRow;*/
-        //  TO DO NEXT TIME
-        //console.log(brickWidth);
-        //for(var i=0; i < canvasWidth; i+brickWidth) {
-            /*ctx.rect(i, 0, brickWidth, defaultBrickHeight);
-            ctx.strokeStyle = '#FF0000';
-            ctx.fillStyle = '#FF0000';
-            ctx.fill();        
-            ctx.stroke();*/
-        //}
     }
 
     function ResetPlayer () {
-        player = {      //  Current player/paddle information   
+        PLAYER = {      //  Current player/paddle information   
             score : 0,
             lives : defaultLives,
             paddleHeight : defaultPaddleHeight,
@@ -80,7 +82,7 @@ var BreakOut = (function() {
     }
 
     function ResetBall () {
-        ball = {
+        BALL = {
             x : canvasWidth / 2,    
             y : canvasHeight / 2,
             radius : defaultBallRadius,
@@ -94,73 +96,84 @@ var BreakOut = (function() {
     function RefreshFrame () {
 
         //  Hits any side wall
-        if (ball.x == (canvasWidth - ball.radius) || ball.x == ball.radius) {
-            ball.x_increment = -ball.x_increment;
+        if (BALL.x == (canvasWidth - BALL.radius) || BALL.x == BALL.radius) {
+            BALL.x_increment = -BALL.x_increment;
         }
         
         //  Hits the top
-        if (ball.y == ball.radius) {
-            ball.y_increment = -ball.y_increment;
+        if (BALL.y == BALL.radius) {
+            BALL.y_increment = -BALL.y_increment;
         }
+
+        //  Hits any of the blocks
+
 
         //  Goes off the bottom of the screen completely. Decrement the number of lives
         //  and reset the ball to start the player again
-        if (ball.y == canvasHeight + ball.radius){
-            player.lives--;
+        if (BALL.y == canvasHeight + BALL.radius){
+            PLAYER.lives--;
             ResetBall();
         }
 
         //  Hits the paddle
-        if (ball.y == canvasHeight - player.paddleHeight
-            && ball.x >= player.paddleLeft
-            && ball.x <= (player.paddleLeft + player.paddleWidth)
+        if (BALL.y == canvasHeight - PLAYER.paddleHeight
+            && BALL.x >= PLAYER.paddleLeft
+            && BALL.x <= (PLAYER.paddleLeft + PLAYER.paddleWidth)
             ) {
-            ball.y_increment = -ball.y_increment;
+            BALL.y_increment = -BALL.y_increment;
         }
 
         //  Wipe the canvas, and reload the player and ball
         ClearCanvas (); 
-        ResetWall();
+        DrawWall();
         DrawPlayer ();
-        DrawBall(ball.x, ball.y, ball.radius);
+        DrawBall(BALL.x, BALL.y, BALL.radius);
 
         //  Move the ball to the current increment
-        ball.x = ball.x - ball.x_increment;
-        ball.y = ball.y - ball.y_increment;
+        BALL.x = BALL.x - BALL.x_increment;
+        BALL.y = BALL.y - BALL.y_increment;
         
         //   Feedback the score to the player
-        player.score++;
-        document.getElementById('Score').innerText = player.score;
-        document.getElementById('Lives').innerText = player.lives;      
+        PLAYER.score++;
+        document.getElementById('Score').innerText = PLAYER.score;
+        document.getElementById('Lives').innerText = PLAYER.lives;      
 
         //  Check if the player has any lives left
-        if (player.lives > 0) {
+        if (PLAYER.lives > 0) {
             setTimeout(RefreshFrame, refreshRateInMilliseconds);
         }
     }
 
     //  Draws the current player paddle position on the screen
     function DrawPlayer() {
-        ctx.rect(player.paddleLeft, canvasHeight-player.paddleHeight, player.paddleWidth, player.paddleHeight);
-        ctx.strokeStyle = '#000000';
-        ctx.fillStyle = '#000000';
-        ctx.fill();        
-        ctx.stroke();
+        CTX.rect(PLAYER.paddleLeft, canvasHeight-PLAYER.paddleHeight, PLAYER.paddleWidth, PLAYER.paddleHeight);
+        CTX.strokeStyle = '#000000';
+        CTX.fillStyle = '#000000';
+        CTX.fill();        
+        CTX.stroke();
     }
 
     //  Draws a crude ball on the canvas
     function DrawBall (x, y, radius) {
-        ctx.beginPath();
-        ctx.arc(x,y,radius,0,2*Math.PI);
-        ctx.strokeStyle = '#000000';
-        ctx.fillStyle = '#000000';
-        ctx.fill();
-        ctx.stroke();
+        CTX.beginPath();
+        CTX.arc(x,y,radius,0,2*Math.PI);
+        CTX.strokeStyle = '#000000';
+        CTX.fillStyle = '#000000';
+        CTX.fill();
+        CTX.stroke();
+    }
+
+    //  Draws the wall from the WALL array, will then only draw bricks still in play
+    function DrawWall (DrawWall) {
+        WALL.map(function (brick) {            
+            CTX.strokeStyle = '#000000';        
+            CTX.strokeRect(brick.x, brick.y, brick.width, brick.height);            
+        });
     }
 
     //  Shortcut to clear the canvas
     function ClearCanvas () {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
     } 
 
     return {
