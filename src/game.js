@@ -129,7 +129,7 @@ var BreakOut = (function() {
     //  Creates the array of objects that form the wall
     function ResetWall () {    
         const defaultBricksPerRow = 5;
-        const defaultBrickRows = 1;       
+        const defaultBrickRows = 3;       
         var wall = [];   
         var brickWidth = canvasWidth/defaultBricksPerRow;
         for(var row=0; row < defaultBrickRows; row++) {
