@@ -29,49 +29,6 @@ var BreakOut = (function() {
         Play();
     }
 
-    //  Helper method used to check if the ball has hit a brick, ***less performant*** than in the game loop but nicely seperated
-    function DetectBrickCollision () {
-        
-        var brickbottomY = this.y + this.height + BALL.radius;
-        
-        //  Has the ball hit the bottom or top of the brick?
-        if (this.draw 
-            && ((BALL.y == brickbottomY) || (BALL.y == this.y))
-            && BALL.x < this.rightx
-            && BALL.x > this.leftx               
-        ) { 
-            BALL.y_increment = -BALL.y_increment;
-            this.draw = false;  
-            return true;            
-        } 
-
-        //  Hit left side of brick
-        if (this.draw
-            && BALL.x == this.leftx
-            && BALL.y > this.y 
-            && BALL.y < this.y+defaultBrickHeight
-        ){
-            BALL.y_increment = -BALL.y_increment;
-            BALL.x_increment = -BALL.x_increment;
-            this.draw = false; 
-            return true;
-        }
-
-        //  Hit right side of brick
-        if (this.draw
-            && BALL.x == this.rightx
-            && BALL.y > this.y
-            && BALL.y < this.y+defaultBrickHeight
-        ){
-            BALL.y_increment = -BALL.y_increment;
-            BALL.x_increment = -BALL.x_increment;
-            this.draw = false;
-            return true;
-        }        
-        
-        return false;
-    }
-
     //  The main loop that the game will run on is here, we clear the canvas, 
     //  draw the ball, check for collisions, game over and then call it all again.
     function Play () {
@@ -172,21 +129,14 @@ var BreakOut = (function() {
     //  Creates the array of objects that form the wall
     function ResetWall () {    
         const defaultBricksPerRow = 5;
-        const defaultBrickRows = 6;       
+        const defaultBrickRows = 1;       
         var wall = [];   
         var brickWidth = canvasWidth/defaultBricksPerRow;
         for(var row=0; row < defaultBrickRows; row++) {
             for(var col=0; col < canvasWidth; col+=brickWidth) {
-                var brick = {
-                    width: canvasWidth/defaultBricksPerRow,
-                    height : defaultBrickHeight,
-                    x : col,
-                    y : row * defaultBrickHeight,
-                    leftx : col,
-                    rightx : (col)+brickWidth,
-                    draw : true
-                };
-                brick.DetectBrickCollision = DetectBrickCollision.bind(brick);
+                //  Create the brick and give it the collision detection function
+                var brick = new Brick(row, col, brickWidth, defaultBricksPerRow)
+                brick.DetectBrickCollision = DetectBrickCollision.bind(brick);               
                 wall.push(brick);
             }
         }
@@ -215,6 +165,52 @@ var BreakOut = (function() {
             paddleWidth : 150,
             paddleLeft : (canvasWidth/2)-(150/2)
         };
+    }
+
+    //  Object that creates the brick 
+    function Brick (row, col, brickWidth, defaultBricksPerRow) {
+        this.width = canvasWidth/defaultBricksPerRow,
+        this.height = defaultBrickHeight,
+        this.x = col,
+        this.y = row * defaultBrickHeight,
+        this.leftx = col,
+        this.rightx = (col)+brickWidth,
+        this.draw = true
+    }
+
+     //  Helper method used to check if the ball has hit a brick, ***less performant*** than in the game loop but nicely seperated
+    function DetectBrickCollision () {
+        
+        var brickbottomY = this.y + this.height + BALL.radius;
+        
+        if (!this.draw) {
+            return false;
+        }
+        
+        //  Has the ball hit the bottom or top of the brick?
+        if (((BALL.y == brickbottomY) || (BALL.y == this.y))
+            && BALL.x < this.rightx
+            && BALL.x > this.leftx
+        ) {
+            BALL.y_increment = -BALL.y_increment;
+            this.draw = false;
+            return true;
+        }
+
+        //  Hit left or right side of brick
+        if (
+            (BALL.x == this.leftx && BALL.y >= this.y && BALL.y <= this.y + defaultBrickHeight)
+            || 
+            (BALL.x == this.rightx && BALL.y >= this.y && BALL.y <= this.y + defaultBrickHeight)
+        ) {
+            BALL.y_increment = -BALL.y_increment;
+            BALL.x_increment = -BALL.x_increment;
+            this.draw = false;
+            return true;
+        }
+
+        //  No collision detected
+        return false;
     }
 
     //  Puts the ball into a starting position and sets it's movement increments
